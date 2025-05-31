@@ -24,3 +24,19 @@ export const deleteProduct = (id: number | string) =>
 // Get product by EAN
 export const getProductByEan = (ean: string) =>
   api.get<Product>(`/products/ean/${ean}`);
+
+// Get products by Category
+export const getProductsByCategory = (categoryId: number | string) =>
+  api.get<Product[]>(`/products/category/${categoryId}`);
+
+// Get products by SubCategory
+export const getProductsBySubCategory = (subCategoryId: number | string) =>
+  api.get<Product[]>(`/products/subcategory/${subCategoryId}`);
+
+// Get products by SubSubCategory
+export const getProductsBySubSubCategory = (subSubCategoryId: number | string) =>
+  api.get<Product[]>(`/products/subsubcategory/${subSubCategoryId}`);
+
+// Get products by Flag
+export const getProductsByFlag = (flagId: number | string) =>
+  api.get<Product[]>(`/products/flag/${flagId}`);

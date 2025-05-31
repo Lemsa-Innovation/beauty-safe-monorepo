@@ -1,13 +1,20 @@
 import { useQuery } from '@tanstack/react-query';
-import { listProducts } from '../services/product.service';
-import { getProductById } from '../services/product.service';
-import { getProductByEan } from '../services/product.service';
+import {
+  listProducts,
+  getProductById,
+  getProductByEan,
+  getProductsByCategory,
+  getProductsBySubCategory,
+  getProductsBySubSubCategory,
+  getProductsByFlag,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from '../services/product.service';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createProduct } from '../services/product.service';
-import { updateProduct } from '../services/product.service';
-import { deleteProduct } from '../services/product.service';
 import type { Product } from '../lib/entities/product.entity';
 
+// --- Queries ---
 
 export function useProducts() {
   return useQuery({
@@ -15,6 +22,7 @@ export function useProducts() {
     queryFn: listProducts,
   });
 }
+
 export function useProductById(id: number | string) {
   return useQuery({
     queryKey: ['product', id],
@@ -22,6 +30,7 @@ export function useProductById(id: number | string) {
     enabled: !!id,
   });
 }
+
 export function useProductByEan(ean: string) {
   return useQuery({
     queryKey: ['productByEan', ean],
@@ -29,6 +38,39 @@ export function useProductByEan(ean: string) {
     enabled: !!ean,
   });
 }
+
+export function useProductsByCategory(categoryId: number | string) {
+  return useQuery({
+    queryKey: ['productsByCategory', categoryId],
+    queryFn: () => getProductsByCategory(categoryId),
+    enabled: !!categoryId,
+  });
+}
+
+export function useProductsBySubCategory(subCategoryId: number | string) {
+  return useQuery({
+    queryKey: ['productsBySubCategory', subCategoryId],
+    queryFn: () => getProductsBySubCategory(subCategoryId),
+    enabled: !!subCategoryId,
+  });
+}
+
+export function useProductsBySubSubCategory(subSubCategoryId: number | string) {
+  return useQuery({
+    queryKey: ['productsBySubSubCategory', subSubCategoryId],
+    queryFn: () => getProductsBySubSubCategory(subSubCategoryId),
+    enabled: !!subSubCategoryId,
+  });
+}
+
+export function useProductsByFlag(flagId: number | string) {
+  return useQuery({
+    queryKey: ['productsByFlag', flagId],
+    queryFn: () => getProductsByFlag(flagId),
+    enabled: !!flagId,
+  });
+}
+
 // --- Mutations ---
 
 export function useCreateProduct() {

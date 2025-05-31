@@ -8,6 +8,8 @@ import {
 } from "../../../hooks/useProduct";
 import EditProductForm from "./edit-product";
 import { useQueryClient } from "@tanstack/react-query";
+import type { Ingredient } from "../../../lib/entities";
+
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -20,8 +22,7 @@ const ProductDetail: React.FC = () => {
   const handleDelete = () => {
     Modal.confirm({
       title: "Supprimer le produit ?",
-      content:
-        "Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.",
+      content: "Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.",
       okText: "Oui, supprimer",
       okType: "danger",
       cancelText: "Annuler",
@@ -41,6 +42,7 @@ const ProductDetail: React.FC = () => {
       },
     });
   };
+
   const handleUpdate = async (values: any) => {
     if (!id) {
       message.error("Product ID is missing");
@@ -52,19 +54,17 @@ const ProductDetail: React.FC = () => {
     message.success("Product updated");
     setEditVisible(false);
   };
+
   if (isLoading) return <div>Loading...</div>;
   if (!product) return <div>Product not found</div>;
 
+  // ----> Main UI
   return (
     <Card
       title={product.name}
       extra={
         <>
-          <Button
-            onClick={() => setEditVisible(true)}
-            type="primary"
-            style={{ marginRight: 8 }}
-          >
+          <Button onClick={() => setEditVisible(true)} type="primary" style={{ marginRight: 8 }}>
             Modifier
           </Button>
           <Button danger onClick={handleDelete}>
@@ -73,133 +73,75 @@ const ProductDetail: React.FC = () => {
         </>
       }
     >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: 32, // space between descriptions and image
-        }}
-      >
+      <div style={{
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        gap: 32,
+      }}>
         <div style={{ flex: 1 }}>
           <Descriptions column={1}>
-            <Descriptions.Item label="EAN">
-              {product.eans?.join(", ")}
+            <Descriptions.Item label="EAN">{product.ean}</Descriptions.Item>
+            <Descriptions.Item label="Marque">{product.brand?.name}</Descriptions.Item>
+            <Descriptions.Item label="Score">{product.validScore}</Descriptions.Item>
+            <Descriptions.Item label="Type">{product.type}</Descriptions.Item>
+            <Descriptions.Item label="Catégorie">{product.category?.name ?? "—"}</Descriptions.Item>
+            <Descriptions.Item label="Sous-catégorie">{product.subCategory?.name ?? "—"}</Descriptions.Item>
+            <Descriptions.Item label="Sous-sous-catégorie">{product.subSubCategory?.name ?? "—"}</Descriptions.Item>
+            <Descriptions.Item label="Flags">
+              {(product.flags && product.flags.length > 0)
+                ? product.flags.map((f: { name: any; }) => f.name).join(', ')
+                : "—"}
             </Descriptions.Item>
-            <Descriptions.Item label="Brand">{product.brand}</Descriptions.Item>
-            <Descriptions.Item label="Score">{product.score}</Descriptions.Item>
-            {/* <Descriptions.Item label="Validation Score">{product.validation_score}</Descriptions.Item> */}
-
-            {/* --- Categories Section --- */}
-            {/* <Descriptions.Item label="Catégories">
-      {product.categories
-        ? typeof product.categories === "object"
-          ? Object.entries(product.categories)
-              .map(([key, val]) => (
-                <div key={key}>
-                  <strong>{key.replace(/_/g, " ")}:</strong> {val}
-                </div>
-              ))
-          : String(product.categories)
-        : "N/A"}
-    </Descriptions.Item> */}
-
-            {/* --- Compositions Section --- */}
             <Descriptions.Item label="Ingrédients">
-              {Array.isArray(product.compositions) &&
-              product.compositions.length > 0
-                ? product.compositions.map((comp, idx) => (
-                    <div key={idx}>
-                      {Array.isArray(comp.ingredients) ? (
-                        <ul style={{ margin: 0, paddingLeft: 20 }}>
-                          {comp.ingredients.map(
-                            (
-                              ing: {
-                                official_name: any;
-                                name: any;
-                                score:
-                                  | string
-                                  | number
-                                  | bigint
-                                  | boolean
-                                  | React.ReactElement<
-                                      unknown,
-                                      string | React.JSXElementConstructor<any>
-                                    >
-                                  | Iterable<React.ReactNode>
-                                  | Promise<
-                                      | string
-                                      | number
-                                      | bigint
-                                      | boolean
-                                      | React.ReactPortal
-                                      | React.ReactElement<
-                                          unknown,
-                                          | string
-                                          | React.JSXElementConstructor<any>
-                                        >
-                                      | Iterable<React.ReactNode>
-                                      | null
-                                      | undefined
-                                    >
-                                  | null
-                                  | undefined;
-                              },
-                              i: React.Key | null | undefined
-                            ) => (
-                              <li key={i}>
-                                {ing.official_name || ing.name}
-                                {/* You can add more info here, e.g. */}
-                                {ing.score !== undefined && (
-                                  <span
-                                    style={{ color: "#888", marginLeft: 8 }}
-                                  >
-                                    (Score: {ing.score})
-                                  </span>
-                                )}
-                              </li>
-                            )
-                          )}
-                        </ul>
-                      ) : (
-                        "—"
-                      )}
-                    </div>
-                  ))
-                : "N/A"}
+              {(product.composition && product.composition.length > 0)
+                ? (
+                    <ul style={{ margin: 0, paddingLeft: 20 }}>
+                    {product.composition.map((ing: Ingredient) =>
+                      <li key={ing.id}>
+                      {ing.officialName || ing.name}
+                      <span style={{ color: "#888", marginLeft: 8 }}>
+                        (Score: {ing.score})
+                      </span>
+                      </li>
+                    )}
+                    </ul>
+                ) : "—"}
             </Descriptions.Item>
           </Descriptions>
         </div>
+        {/* --- IMAGES --- */}
         <div>
-          {product.images?.image && (
-            <div style={{ marginTop: 16 }}>
-              <a
-                href={product.images.image}
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Cliquez pour voir l'image en taille réelle"
-              >
-                <img
-                  src={product.images.image}
-                  alt={product.name}
-                  style={{
-                    maxWidth: 400,
-                    maxHeight: 400,
-                    borderRadius: 6,
-                    boxShadow: "0 2px 8px #eee",
-                    cursor: "pointer",
-                    transition: "transform 0.2s",
-                  }}
-                />
-              </a>
+          {Array.isArray(product.images) && product.images.length > 0 && (
+            <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {product.images.map((img: { image: string | undefined; id: React.Key | null | undefined; thumbnail: any; }) => (
+                <a
+                  href={img.image}
+                  key={img.id}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Cliquez pour voir l'image en taille réelle"
+                >
+                  <img
+                    src={img.thumbnail || img.image}
+                    alt={product.name}
+                    style={{
+                      maxWidth: 220,
+                      maxHeight: 220,
+                      borderRadius: 6,
+                      boxShadow: "0 2px 8px #eee",
+                      cursor: "pointer",
+                      transition: "transform 0.2s",
+                      marginBottom: 6,
+                    }}
+                  />
+                </a>
+              ))}
             </div>
           )}
         </div>
       </div>
-
-      {/* --- Image Section --- */}
-
       <Modal
         open={editVisible}
         title="Update Product"

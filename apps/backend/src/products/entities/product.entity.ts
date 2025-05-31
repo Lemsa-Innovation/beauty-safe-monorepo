@@ -51,8 +51,7 @@ export class Product {
   @ManyToOne(() => SubSubCategory, { eager: true, nullable: true })
   subSubCategory: SubSubCategory | null;
 
-
-  @OneToMany(() => ProductImage, (image) => image.product, { cascade: true })
+  @OneToMany(() => ProductImage, (image) => image.product, { cascade: true, eager: true  })
   images: ProductImage[];
 
   @ManyToMany(() => Ingredient, { eager: true })

@@ -1,16 +1,14 @@
 import React from "react";
 import { Form, Input, InputNumber, Button, Space, Divider } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
-import type { Product } from "../../../lib/entities/product.entity";
+import type { Product, ProductImage, Ingredient } from "../../../lib/entities";
 
 interface EditProductFormProps {
   initialValues: Partial<Product>;
   onFinish: (values: any) => void;
   loading: boolean;
 }
-interface ProductFormValues extends Partial<Product> {
-  ingredients?: any[]; // for form editing, can be typed better if needed
-}
+
 const EditProductForm: React.FC<EditProductFormProps> = ({
   initialValues,
   onFinish,
@@ -18,81 +16,155 @@ const EditProductForm: React.FC<EditProductFormProps> = ({
 }) => {
   const [form] = Form.useForm();
 
-React.useEffect(() => {
-  // Extract the first compositions.ingredients if present
-  let prefill: ProductFormValues = { ...initialValues };
-  if (prefill.compositions && Array.isArray(prefill.compositions)) {
-    prefill.ingredients = (prefill.compositions[0]?.ingredients || []);
-  }
-  form.setFieldsValue(prefill);
-}, [initialValues, form]);
+  // Prepare initial values for form
+  React.useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue({
+        ...initialValues,
+        images: Array.isArray(initialValues.images)
+          ? initialValues.images.map(img => ({ image: img.image, thumbnail: img.thumbnail }))
+          : [],
+        composition: Array.isArray(initialValues.composition)
+          ? initialValues.composition.map(ing => ({
+              officialName: ing.officialName,
+              name: ing.name,
+              score: ing.score,
+            }))
+          : [],
+      });
+    }
+  }, [initialValues, form]);
 
-const handleFinish = (values: ProductFormValues) => {
-  const { ingredients, ...rest } = values;
-  const updated: Partial<Product> = {
-    ...rest,
-    compositions: [
-      {
-        index: 1,
-        ingredients: ingredients || [],
-      },
-    ],
+  // Transform form values to API payload
+  const handleFinish = (values: any) => {
+    // Map images, composition, and other details as needed for API
+    const payload: Partial<Product> = {
+      ...values,
+      images: values.images
+        ? values.images.map((img: any) => ({
+            image: img.image,
+            thumbnail: img.thumbnail || img.image,
+          }))
+        : [],
+      composition: values.composition
+        ? values.composition.map((ing: any) => ({
+            officialName: ing.officialName,
+            name: ing.name,
+            score: ing.score,
+          }))
+        : [],
+    };
+    onFinish(payload);
   };
-  onFinish(updated);
-};
 
   return (
-    <Form layout="vertical" form={form} onFinish={handleFinish}>
-      <Form.Item name="name" label="Nom" rules={[{ required: true }]}>
+    <Form
+      layout="vertical"
+      form={form}
+      onFinish={handleFinish}
+      initialValues={initialValues}
+    >
+      <Form.Item name="name" label="Nom" rules={[{ required: true, message: "Le nom est requis" }]}>
         <Input />
       </Form.Item>
-      <Form.Item name="brand" label="Marque" rules={[{ required: true }]}>
+      <Form.Item
+        name={["brand", "name"]}
+        label="Marque"
+        rules={[{ required: true, message: "La marque est requise" }]}
+      >
         <Input />
       </Form.Item>
-      <Form.Item name="score" label="Score">
+      <Form.Item name="ean" label="EAN" rules={[{ required: true, message: "EAN requis" }]}>
+        <Input />
+      </Form.Item>
+      <Form.Item name="validScore" label="Score">
         <InputNumber style={{ width: "100%" }} />
       </Form.Item>
-      <Form.Item name="validation_score" label="Validation Score">
-        <InputNumber style={{ width: "100%" }} />
+      <Form.Item name="type" label="Type">
+        <Input />
       </Form.Item>
-
-      <Divider>Ingrédients</Divider>
-      <Form.List name="ingredients">
+      {/* You can add category, subCategory, subSubCategory here if you want (as Select fields) */}
+      
+      <Divider>Images</Divider>
+      <Form.List name="images">
         {(fields, { add, remove }) => (
           <>
             {fields.map(({ key, name, ...restField }) => (
               <Space key={key} style={{ display: "flex", marginBottom: 8 }} align="baseline">
                 <Form.Item
                   {...restField}
-                  name={[name, "official_name"]}
-                  rules={[{ required: true, message: "Nom d'ingrédient requis" }]}
+                  name={[name, "image"]}
+                  rules={[{ required: true, message: "URL de l'image requise" }]}
                 >
-                  <Input placeholder="Nom de l'ingrédient" />
+                  <Input placeholder="URL image" />
                 </Form.Item>
                 <Form.Item
                   {...restField}
-                  name={[name, "score"]}
-                  rules={[{ required: true, message: "Score requis" }]}
+                  name={[name, "thumbnail"]}
+                  rules={[{ required: false }]}
                 >
-                  <InputNumber placeholder="Score" />
+                  <Input placeholder="URL thumbnail (optionnel)" />
                 </Form.Item>
-                <Button type="link" danger onClick={() => remove(name)} icon={<MinusCircleOutlined />} />
+                <Button
+                  type="link"
+                  danger
+                  icon={<MinusCircleOutlined />}
+                  onClick={() => remove(name)}
+                />
               </Space>
             ))}
             <Form.Item>
-              <Button
-                type="dashed"
-                onClick={() => add()}
-                icon={<PlusOutlined />}
-                block
-              >
-                Ajouter un ingrédient
+              <Button type="dashed" onClick={() => add()} icon={<PlusOutlined />} block>
+                Ajouter une image
               </Button>
             </Form.Item>
           </>
         )}
       </Form.List>
 
+      <Divider>Ingrédients</Divider>
+      <Form.List name="composition">
+        {(fields, { add, remove }) => (
+          <>
+            {fields.map(({ key, name, ...restField }) => (
+              <Space key={key} style={{ display: "flex", marginBottom: 8 }} align="baseline">
+                <Form.Item
+                  {...restField}
+                  name={[name, "officialName"]}
+                  rules={[{ required: true, message: "Nom officiel requis" }]}
+                >
+                  <Input placeholder="Nom officiel" />
+                </Form.Item>
+                <Form.Item
+                  {...restField}
+                  name={[name, "name"]}
+                  rules={[{ required: false }]}
+                >
+                  <Input placeholder="Nom (optionnel)" />
+                </Form.Item>
+                <Form.Item
+                  {...restField}
+                  name={[name, "score"]}
+                  rules={[{ required: false }]}
+                >
+                  <InputNumber placeholder="Score" />
+                </Form.Item>
+                <Button
+                  type="link"
+                  danger
+                  icon={<MinusCircleOutlined />}
+                  onClick={() => remove(name)}
+                />
+              </Space>
+            ))}
+            <Form.Item>
+              <Button type="dashed" onClick={() => add()} icon={<PlusOutlined />} block>
+                Ajouter un ingrédient
+              </Button>
+            </Form.Item>
+          </>
+        )}
+      </Form.List>
       <Form.Item>
         <Button htmlType="submit" type="primary" loading={loading} block>
           Enregistrer
