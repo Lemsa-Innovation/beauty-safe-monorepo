@@ -1,13 +1,15 @@
 import { api } from '../lib/api/api-client';
-import type { Product } from '../lib/entities/product.entity';
+import type { Product } from '../lib/entities';
 
 // Create product
 export const createProduct = (data: Partial<Product>) =>
   api.post<Product, Partial<Product>>('/products', data);
 
 // List all products
-export const listProducts = () =>
-  api.get<Product[]>('/products');
+export const listProducts = (page = 1, limit = 10) =>
+  api.get<{ data: Product[]; total: number; page: number; limit: number }>(
+    `/products?page=${page}&limit=${limit}`
+  );
 
 // Get product by ID
 export const getProductById = (id: number | string) =>

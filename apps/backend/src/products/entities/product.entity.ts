@@ -16,6 +16,7 @@ import { Category } from 'src/categories/entities/category.entity';
 import { SubCategory } from 'src/subcategories/entities/subcategory.entity';
 
 export enum ProductType {
+  ALL = 'All',
   MEN = 'Men',
   WOMEN = 'Women',
   CHILD = 'Child',

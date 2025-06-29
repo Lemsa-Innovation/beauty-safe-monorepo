@@ -6,9 +6,14 @@ import {
   IsArray,
   ArrayNotEmpty,
   IsInt,
+  IsOptional,
 } from 'class-validator';
 
 export class CreateIngredientDto {
+  @ApiProperty({ required: false })
+  @IsInt()
+  @IsOptional()
+  id?: number;
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

@@ -12,17 +12,16 @@ import {
   deleteProduct,
 } from '../services/product.service';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Product } from '../lib/entities/product.entity';
+import type { Product } from '../lib/entities';
 
 // --- Queries ---
 
-export function useProducts() {
+export function useProducts(page: number, limit: number = 10) {
   return useQuery({
-    queryKey: ['products'],
-    queryFn: listProducts,
+    queryKey: ['products', page, limit],
+    queryFn: () => listProducts(page, limit),
   });
 }
-
 export function useProductById(id: number | string) {
   return useQuery({
     queryKey: ['product', id],

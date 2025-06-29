@@ -1,12 +1,22 @@
 import React from "react";
-import { Table, message, Input, Button, Select, Row, Col, Modal } from "antd";
 import {
-  useProducts,
+  Table,
+  message,
+  Input,
+  Button,
+  Select,
+  Row,
+  Col,
+  Modal,
+  Spin,
+} from "antd";
+import {
+  
   useProductByEan,
   useProductsByFlag,
   useProductsByCategory,
+  useProducts,
 } from "../../../hooks/useProduct";
-// import type { Product } from "../../../lib/entities";
 import type { Product } from "../../../lib/entities";
 import { useNavigate } from "react-router-dom";
 import { useFlags } from "../../../hooks/useFlag";
@@ -14,45 +24,34 @@ import { useCategories } from "../../../hooks/useCategory";
 import CreateProductForm from "./create-product-form";
 
 const ProductsList: React.FC = () => {
-  const { data: products, isLoading, error } = useProducts();
   const navigate = useNavigate();
 
   const [createVisible, setCreateVisible] = React.useState(false);
-  const [ean, setEan] = React.useState("");
   const [search, setSearch] = React.useState("");
   const [selectedFlag, setSelectedFlag] = React.useState<number | undefined>();
-  const [selectedCategory, setSelectedCategory] = React.useState<
-    number | undefined
-  >();
+  const [selectedCategory, setSelectedCategory] = React.useState<number | undefined>();
+  const [page, setPage] = React.useState(1);
+  const [limit, setLimit] = React.useState(10);
 
-  // Fetch filters data
   const { data: flags = [], isLoading: flagsLoading } = useFlags();
-  const { data: categories = [], isLoading: categoriesLoading } =
-    useCategories();
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
 
-  // Product by EAN
   const {
-    data: foundProduct,
-    isLoading: isSearching,
-    error: searchError,
-  } = useProductByEan(search);
-  // Products by flag/category
-  const { data: productsByFlag, isLoading: loadingFlag } = useProductsByFlag(
-    selectedFlag!
-  );
-  const { data: productsByCategory, isLoading: loadingCategory } =
-    useProductsByCategory(selectedCategory!);
+    data: paginatedData,
+    isLoading,
+  } = useProducts(page, limit);
+
+  const { data: foundProduct, isLoading: isSearching, error: searchError } = useProductByEan(search);
+
+  const { data: productsByFlag, isLoading: loadingFlag } = useProductsByFlag(selectedFlag!);
+  const { data: productsByCategory, isLoading: loadingCategory } = useProductsByCategory(selectedCategory!);
 
   React.useEffect(() => {
-    if (error) {
-      message.error("Erreur lors de la récupération des produits");
-    }
     if (searchError) {
       message.error("Aucun produit trouvé avec cet EAN");
     }
-  }, [error, searchError]);
+  }, [searchError]);
 
-  // Columns
   const columns = [
     { title: "ID", dataIndex: "uid" },
     { title: "Nom", dataIndex: "name" },
@@ -101,42 +100,51 @@ const ProductsList: React.FC = () => {
     },
   ];
 
-  // Table data logic
-  let tableData: Product[] = products || [];
+  let tableData: Product[] = paginatedData?.data || [];
+  let total = paginatedData?.total || 0;
+
   if (search && foundProduct) {
-    tableData = [foundProduct as Product];
+    tableData = [foundProduct];
+    total = 1;
   } else if (selectedFlag && productsByFlag) {
-    tableData = productsByFlag as Product[];
+    tableData = productsByFlag;
+    total = productsByFlag.length;
   } else if (selectedCategory && productsByCategory) {
-    tableData = productsByCategory as Product[];
+    tableData = productsByCategory;
+    total = productsByCategory.length;
   }
 
   return (
     <>
-    <Modal
-  open={createVisible}
-  title="Ajouter un produit"
-  onCancel={() => setCreateVisible(false)}
-  footer={null}
-  destroyOnClose
->
-  <CreateProductForm
-    onSuccess={() => {
-      setCreateVisible(false);
-    }}
-  />
-</Modal>
+      <Modal
+        open={createVisible}
+        title="Ajouter un produit"
+        onCancel={() => setCreateVisible(false)}
+        footer={null}
+        destroyOnClose
+      >
+        <CreateProductForm
+          onSuccess={() => {
+            setCreateVisible(false);
+          }}
+        />
+      </Modal>
+
       <Row gutter={16} style={{ marginBottom: 16 }}>
         <Col>
           <Input.Search
-            placeholder="Rechercher par EAN (API)"
+            placeholder="Rechercher par EAN"
             allowClear
             style={{ width: 230 }}
-            value={ean}
-            onChange={(e) => setEan(e.target.value)}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             enterButton="Chercher"
             loading={isSearching}
-            onSearch={(val) => setSearch(val.trim())}
+            onSearch={(val) => {
+              setSearch(val.trim());
+              setSelectedCategory(undefined);
+              setSelectedFlag(undefined);
+            }}
           />
         </Col>
         <Col>
@@ -182,7 +190,6 @@ const ProductsList: React.FC = () => {
         <Col>
           <Button
             onClick={() => {
-              setEan("");
               setSearch("");
               setSelectedCategory(undefined);
               setSelectedFlag(undefined);
@@ -201,18 +208,25 @@ const ProductsList: React.FC = () => {
           </Button>
         </Col>
       </Row>
-      <Table<Product>
-        loading={isLoading || isSearching || loadingFlag || loadingCategory}
-        dataSource={tableData}
-        rowKey="uid"
-        columns={columns}
-        onRow={(record) => ({
-          onClick: () => navigate(`/dashboard/products/${record.uid}`),
-          style: { cursor: "pointer" },
-        })}
-      />
+
+      <Spin spinning={isLoading || isSearching || loadingFlag || loadingCategory}>
+        <Table<Product>
+          dataSource={tableData}
+          rowKey="uid"
+          columns={columns}
+          pagination={{
+            current: page,
+            pageSize: limit,
+            total,
+            onChange: (newPage) => setPage(newPage),
+          }}
+          onRow={(record) => ({
+            onClick: () => navigate(`/dashboard/products/${record.uid}`),
+            style: { cursor: "pointer" },
+          })}
+        />
+      </Spin>
     </>
-    
   );
 };
 

@@ -19,6 +19,8 @@ import {
 } from '@nestjs/swagger';
 import { Public } from '../common/decorators/public.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
+import { Query } from '@nestjs/common';
+import { ApiQuery } from '@nestjs/swagger';
 
 @ApiBearerAuth()
 @ApiTags('Products')
@@ -31,11 +33,26 @@ export class ProductsController {
   create(@Body() createProductDto: CreateProductDto) {
     return this.productsService.create(createProductDto);
   }
+
   @Roles('admin')
-  @ApiOperation({ summary: 'Get all products' })
+  @ApiOperation({ summary: 'Get all products (with pagination)' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    example: 1,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    example: 10,
+    description: 'Number of products per page (default: 10)',
+  })
   @Get()
-  findAll() {
-    return this.productsService.findAll();
+  findAll(@Query('page') page = 1, @Query('limit') limit = 10) {
+    return this.productsService.findAll(+page, +limit);
   }
   @Public()
   @ApiOperation({ summary: 'Find by ean' })
@@ -64,9 +81,7 @@ export class ProductsController {
   }
   @Public()
   @Get('brand/:brandId')
-  getByBrand(
-    @Param('brandId', ParseIntPipe) brandId: number,
-  ) {
+  getByBrand(@Param('brandId', ParseIntPipe) brandId: number) {
     return this.productsService.findByBrand(brandId);
   }
   @Public()
@@ -92,5 +107,4 @@ export class ProductsController {
   remove(@Param('uid', ParseIntPipe) uid: number) {
     return this.productsService.remove(uid);
   }
- 
 }

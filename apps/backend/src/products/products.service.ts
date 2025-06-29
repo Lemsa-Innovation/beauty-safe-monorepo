@@ -116,9 +116,20 @@ export class ProductsService {
     return this.productsRepository.save(product);
   }
 
-  findAll() {
-    return this.productsRepository.find();
-  }
+  async findAll(page = 1, limit = 10) {
+  const [data, total] = await this.productsRepository.findAndCount({
+    skip: (page - 1) * limit,
+    take: limit,
+    order: { uid: 'DESC' }, // Optional: order newest first
+  });
+
+  return {
+    data,
+    total,
+    page,
+    pageCount: Math.ceil(total / limit),
+  };
+}
 
   async findOne(uid: number) {
     const product = await this.productsRepository.findOne({ where: { uid } });
