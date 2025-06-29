@@ -31,7 +31,7 @@ const ProductsList: React.FC = () => {
   const [selectedFlag, setSelectedFlag] = React.useState<number | undefined>();
   const [selectedCategory, setSelectedCategory] = React.useState<number | undefined>();
   const [page, setPage] = React.useState(1);
-  const [limit, setLimit] = React.useState(10);
+  const [limit] = React.useState(10);
 
   const { data: flags = [], isLoading: flagsLoading } = useFlags();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();

@@ -1,7 +1,7 @@
 import React from "react";
 import { Form, Input, InputNumber, Button, Space, Divider } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
-import type { Product, ProductImage, Ingredient } from "../../../lib/entities";
+import type { Product} from "../../../lib/entities";
 
 interface EditProductFormProps {
   initialValues: Partial<Product>;

@@ -16,7 +16,7 @@ interface CreateProductFormProps {
   onSuccess?: () => void; // <--- Accept onSuccess!
 }
 
-const CreateProductForm: React.FC<CreateProductFormProps> = ({ onSuccess }) => {
+const CreateProductForm: React.FC<CreateProductFormProps> = ({}) => {
   const [form] = Form.useForm();
   const createProduct = useCreateProduct();
 
