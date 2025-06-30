@@ -19,7 +19,7 @@ const Login: React.FC = () => {
     onSuccess: (data) => {
       localStorage.setItem('token', data.access_token);
       message.success('Connexion réussie');
-      navigate('/dashboard/products');
+      navigate('/dashboard/categories');
     },
     onError: () => {
       message.error('Email ou mot de passe incorrect');

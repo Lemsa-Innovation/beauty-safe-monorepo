@@ -19,7 +19,7 @@ const DashboardLayout: React.FC = () => {
         <div style={{ height: 32, margin: 16, color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>Safe Beauty Admin</div>
         <Menu theme="dark" mode="inline" defaultSelectedKeys={['products']}>
           <Menu.Item key="products" icon={<AppstoreOutlined />}>
-            <Link to="/dashboard/products">Produits</Link>
+            <Link to="/dashboard/categories">Produits</Link>
           </Menu.Item>
           <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={logout}>
             Se déconnecter

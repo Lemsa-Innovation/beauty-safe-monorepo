@@ -11,20 +11,23 @@ import {
   Spin,
 } from "antd";
 import {
-  
   useProductByEan,
   useProductsByFlag,
   useProductsByCategory,
+  useProductsBySubCategory,
+  useProductsBySubSubCategory,
   useProducts,
 } from "../../../hooks/useProduct";
 import type { Product } from "../../../lib/entities";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useFlags } from "../../../hooks/useFlag";
 import { useCategories } from "../../../hooks/useCategory";
 import CreateProductForm from "./create-product-form";
 
 const ProductsList: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const categoryId = searchParams.get("CategoryId");
 
   const [createVisible, setCreateVisible] = React.useState(false);
   const [search, setSearch] = React.useState("");
@@ -35,16 +38,9 @@ const ProductsList: React.FC = () => {
 
   const { data: flags = [], isLoading: flagsLoading } = useFlags();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
-
-  const {
-    data: paginatedData,
-    isLoading,
-  } = useProducts(page, limit);
-
   const { data: foundProduct, isLoading: isSearching, error: searchError } = useProductByEan(search);
-
-  const { data: productsByFlag, isLoading: loadingFlag } = useProductsByFlag(selectedFlag!);
-  const { data: productsByCategory, isLoading: loadingCategory } = useProductsByCategory(selectedCategory!);
+  const { data: productsByFlag } = useProductsByFlag(selectedFlag!);
+  const { data: productsByCategory } = useProductsByCategory(categoryId!);
 
   React.useEffect(() => {
     if (searchError) {
@@ -58,30 +54,30 @@ const ProductsList: React.FC = () => {
     {
       title: "Marque",
       dataIndex: "brand",
-      render: (brand: { name: any }) => brand?.name || "—",
+      render: (brand: { name: string }) => brand?.name || "—",
     },
     { title: "EAN", dataIndex: "ean" },
     { title: "Type", dataIndex: "type" },
     {
       title: "Catégorie",
       dataIndex: "category",
-      render: (category: { name: any }) => category?.name || "—",
+      render: (cat: { name: string }) => cat?.name || "—",
     },
     {
       title: "Sous-catégorie",
       dataIndex: "subCategory",
-      render: (subCategory: { name: any }) => subCategory?.name || "—",
+      render: (sub: { name: string }) => sub?.name || "—",
     },
     {
       title: "Sous-sous-catégorie",
       dataIndex: "subSubCategory",
-      render: (subSubCategory: { name: any }) => subSubCategory?.name || "—",
+      render: (subsub: { name: string }) => subsub?.name || "—",
     },
     { title: "Score", dataIndex: "validScore" },
     {
       title: "Image",
       dataIndex: "images",
-      render: (images: { thumbnail?: string; image?: string }[]) =>
+      render: (images: any[]) =>
         images && images.length > 0 && images[0].thumbnail ? (
           <img
             src={images[0].thumbnail}
@@ -100,19 +96,19 @@ const ProductsList: React.FC = () => {
     },
   ];
 
-  let tableData: Product[] = paginatedData?.data || [];
-  let total = paginatedData?.total || 0;
+let tableData: Product[] = [];
+let total = 0;
 
-  if (search && foundProduct) {
-    tableData = [foundProduct];
-    total = 1;
-  } else if (selectedFlag && productsByFlag) {
-    tableData = productsByFlag;
-    total = productsByFlag.length;
-  } else if (selectedCategory && productsByCategory) {
-    tableData = productsByCategory;
-    total = productsByCategory.length;
-  }
+if (search && foundProduct) {
+  tableData = [foundProduct];
+  total = 1;
+} else if (selectedFlag && productsByFlag) {
+  tableData = productsByFlag;
+  total = productsByFlag.length;
+} else if (categoryId && productsByCategory) {
+  tableData = productsByCategory;
+  total = productsByCategory.length;
+}
 
   return (
     <>
@@ -124,9 +120,7 @@ const ProductsList: React.FC = () => {
         destroyOnClose
       >
         <CreateProductForm
-          onSuccess={() => {
-            setCreateVisible(false);
-          }}
+          onSuccess={() => setCreateVisible(false)}
         />
       </Modal>
 
@@ -209,7 +203,13 @@ const ProductsList: React.FC = () => {
         </Col>
       </Row>
 
-      <Spin spinning={isLoading || isSearching || loadingFlag || loadingCategory}>
+      <Spin
+        spinning={
+          isSearching ||
+          flagsLoading ||
+          categoriesLoading
+        }
+      >
         <Table<Product>
           dataSource={tableData}
           rowKey="uid"
