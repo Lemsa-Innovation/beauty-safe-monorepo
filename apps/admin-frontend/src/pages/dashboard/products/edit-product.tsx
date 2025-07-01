@@ -2,7 +2,6 @@ import React from "react";
 import { Form, Input, InputNumber, Button, Space, Divider } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import type { Product} from "../../../lib/entities";
-import FormItemLabel from "antd/es/form/FormItemLabel";
 
 interface EditProductFormProps {
   initialValues: Partial<Product>;

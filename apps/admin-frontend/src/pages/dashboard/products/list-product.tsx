@@ -4,7 +4,6 @@ import {
   message,
   Input,
   Button,
-  Select,
   Row,
   Col,
   Modal,
@@ -17,8 +16,6 @@ import {
 } from "../../../hooks/useProduct";
 import type { Product } from "../../../lib/entities";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useFlags } from "../../../hooks/useFlag";
-import { useCategories } from "../../../hooks/useCategory";
 import CreateProductForm from "./create-product-form";
 
 const ProductsList: React.FC = () => {
@@ -29,15 +26,20 @@ const ProductsList: React.FC = () => {
   const [createVisible, setCreateVisible] = React.useState(false);
   const [search, setSearch] = React.useState("");
   const [selectedFlag, setSelectedFlag] = React.useState<number | undefined>();
-  const [selectedCategory, setSelectedCategory] = React.useState<number | undefined>();
   const [page, setPage] = React.useState(1);
   const [limit] = React.useState(10);
 
-  const { data: flags = [], isLoading: flagsLoading } = useFlags();
-  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
-  const { data: foundProduct, isLoading: isSearching, error: searchError } = useProductByEan(search);
+  const {
+    data: foundProduct,
+    isLoading: isSearching,
+    error: searchError,
+  } = useProductByEan(search);
   const { data: productsByFlag } = useProductsByFlag(selectedFlag!);
-  const { data: productsByCategory } = useProductsByCategory(categoryId!, page, limit);
+  const { data: productsByCategory } = useProductsByCategory(
+    categoryId!,
+    page,
+    limit
+  );
 
   React.useEffect(() => {
     if (searchError) {
@@ -77,19 +79,19 @@ const ProductsList: React.FC = () => {
     },
   ];
 
-let tableData: Product[] = [];
-let total = 0;
+  let tableData: Product[] = [];
+  let total = 0;
 
-if (search && foundProduct) {
-  tableData = [foundProduct];
-  total = 1;
-} else if (selectedFlag && productsByFlag) {
-  tableData = productsByFlag;
-  total = productsByFlag.length;
-} else if (categoryId && productsByCategory) {
-  tableData = productsByCategory.data;
-  total = productsByCategory.total;
-}
+  if (search && foundProduct) {
+    tableData = [foundProduct];
+    total = 1;
+  } else if (selectedFlag && productsByFlag) {
+    tableData = productsByFlag;
+    total = productsByFlag.length;
+  } else if (categoryId && productsByCategory) {
+    tableData = productsByCategory.data;
+    total = productsByCategory.total;
+  }
 
   return (
     <>
@@ -100,9 +102,7 @@ if (search && foundProduct) {
         footer={null}
         destroyOnClose
       >
-        <CreateProductForm
-          onSuccess={() => setCreateVisible(false)}
-        />
+        <CreateProductForm onSuccess={() => setCreateVisible(false)} />
       </Modal>
 
       <Row gutter={16} style={{ marginBottom: 16 }}>
@@ -117,7 +117,6 @@ if (search && foundProduct) {
             loading={isSearching}
             onSearch={(val) => {
               setSearch(val.trim());
-              setSelectedCategory(undefined);
               setSelectedFlag(undefined);
             }}
           />
@@ -126,8 +125,6 @@ if (search && foundProduct) {
           <Button
             onClick={() => {
               setSearch("");
-              setSelectedCategory(undefined);
-              setSelectedFlag(undefined);
             }}
           >
             Réinitialiser
@@ -144,13 +141,7 @@ if (search && foundProduct) {
         </Col>
       </Row>
 
-      <Spin
-        spinning={
-          isSearching ||
-          flagsLoading ||
-          categoriesLoading
-        }
-      >
+      <Spin spinning={isSearching}>
         <Table<Product>
           dataSource={tableData}
           rowKey="uid"
