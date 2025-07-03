@@ -22,8 +22,12 @@ export class IngredientsService {
     return this.ingredientRepository.save(ingredient);
   }
 
-  findAll() {
-    return this.ingredientRepository.find();
+  async findAll(page=1, limit=100) {
+    const skip = (page - 1) * limit;
+    return this.ingredientRepository.find({
+      skip,
+      take: limit,
+    });
   }
 
   async findOne(id: number) {

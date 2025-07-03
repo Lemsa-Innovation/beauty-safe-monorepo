@@ -9,8 +9,11 @@ import {
 } from '../services/ingredient.service';
 import type { Ingredient } from '../lib/entities';
 
-export function useIngredients() {
-  return useQuery({ queryKey: ['ingredients'], queryFn: listIngredients });
+export function useIngreddients(page: number, limit: number = 20) {
+  return useQuery({ 
+    queryKey: ['ingredients', page, limit], 
+    queryFn: () => listIngredients(page, limit),
+  });
 }
 
 export function useIngredientById(id: number | string) {

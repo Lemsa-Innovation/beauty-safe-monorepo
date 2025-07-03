@@ -1,8 +1,8 @@
 import type { Ingredient } from '../lib/entities';
 import { api } from '../lib/api/api-client';
 
-export async function listIngredients(): Promise<Ingredient[]> {
-  return api.get('/ingredients');
+export async function listIngredients(page: number = 1, limit: number = 20): Promise<Ingredient[]> {
+  return api.get(`/ingredients?page=${page}&limit=${limit}`);
 }
 
 export async function getIngredientById(id: number | string): Promise<Ingredient> {

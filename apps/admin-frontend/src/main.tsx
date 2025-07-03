@@ -13,6 +13,10 @@ import CreateProductPage from "./pages/dashboard/products/create-product";
 import CategoriesPage from "./pages/dashboard/categories/list-categories";
 import SubCategoriesPage from "./pages/dashboard/categories/list-sub-categories";
 import SubSubCategoriesPage from "./pages/dashboard/categories/list-sub-subcategories";
+import NotFound from "./pages/not-found";
+import ComingSoon from "./pages/dashboard/coming-soon";
+import "./App.css";
+import IngredientsList from "./pages/dashboard/ingreddients/list-ingreddients";
 
 const queryClient = new QueryClient();
 
@@ -21,21 +25,30 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
+          <Route path="*" element={<NotFound />} />
           <Route path="/login" element={<Login />} />
 
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard/*" element={<DashboardLayout />}>
-              <Route path="products/create" element={<CreateProductPage />} />
-
+              <Route path="coming-soon" element={<ComingSoon />} />
               <Route path="products" element={<ProductsList />} />
               <Route path="products/:id" element={<ProductDetail />} />
+              <Route path="products/create" element={<CreateProductPage />} />
               <Route path="categories" element={<CategoriesPage />} />
-              <Route path="categories/:categoryId" element={<SubCategoriesPage />} />
-              <Route path="subcategories/:subCategoryId" element={<SubSubCategoriesPage />} />
-
+              <Route
+                path="categories/:categoryId"
+                element={<SubCategoriesPage />}
+              />
+              <Route
+                path="subcategories/:subCategoryId"
+                element={<SubSubCategoriesPage />}
+              />
+              <Route
+                path="ingredients"
+                element={<IngredientsList />}
+              />
             </Route>
           </Route>
-
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </BrowserRouter>
