@@ -86,13 +86,26 @@ export class ProductsController {
   }
   @Public()
   @Get('brand/:brandId')
-  getByBrand(@Param('brandId', ParseIntPipe) brandId: number) {
-    return this.productsService.findByBrand(brandId);
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  getByBrand(
+    @Param('brandId', ParseIntPipe) brandId: number,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ) {
+    return this.productsService.findByBrand(brandId, +page, +limit);
   }
+  
   @Public()
   @Get('flag/:flagId')
-  getByFlag(@Param('flagId', ParseIntPipe) flagId: number) {
-    return this.productsService.findByFlag(flagId);
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  getByFlag(
+    @Param('flagId', ParseIntPipe) flagId: number,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ) {
+    return this.productsService.findByFlag(flagId, +page, +limit);
   }
   @Public()
   @Get('category/:id/flagged')

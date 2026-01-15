@@ -12,8 +12,8 @@ async function bootstrap() {
 
       const onrenderPattern = /^https?:\/\/([a-zA-Z0-9-]+\.)*onrender\.com(?::\d+)?$/;
       const localhostPattern = /^http:\/\/localhost(?::\d+)?$/;
-      const lemsaPattern = /^https:\/\/([a-zA-Z0-9-]+\.)*lemsainnovation\.com(?::\d+)?$/;
-      if (onrenderPattern.test(origin) || localhostPattern.test(origin) || lemsaPattern.test(origin)) {
+      const beautysafePattern = /^https:\/\/([a-zA-Z0-9-]+\.)*beautysafe\.online(?::\d+)?$/;
+      if (onrenderPattern.test(origin) || localhostPattern.test(origin) || beautysafePattern.test(origin)) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));

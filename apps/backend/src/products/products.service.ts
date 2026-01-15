@@ -353,12 +353,25 @@ async findByBrand(brandId: number, page = 1, limit = 10) {
       pageCount: category ? Math.ceil(category.totalProducts / limit) : 0,
     };
   }
-  findByFlag(flagId: number) {
-    return this.productsRepository
+  async findByFlag(flagId: number, page = 1, limit = 10) {
+    const qb = this.productsRepository
       .createQueryBuilder('product')
       .leftJoin('product.flags', 'flag')
+      .leftJoinAndSelect('product.images', 'images')
+      .leftJoinAndSelect('product.brand', 'brand')
       .where('flag.id = :flagId', { flagId })
-      .getMany();
+      .orderBy('product.uid', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+  
+    const [data, total] = await qb.getManyAndCount();
+  
+    return {
+      data,
+      total,
+      page,
+      pageCount: Math.ceil(total / limit),
+    };
   }
   async findByCategoryWithFlag(
     categoryId: number,
