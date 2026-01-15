@@ -419,7 +419,8 @@ async findByBrand(brandId: number, page = 1, limit = 10) {
       data,
       page,
       limit: take,
-      hasMore: data.length === take, // optional
+      hasMore: data.length === take, // optional 
+    };
   }
   async findByCategoryWithFlag(
     categoryId: number,
