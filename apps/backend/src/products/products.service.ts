@@ -283,11 +283,23 @@ export class ProductsService {
     return this.productsRepository.remove(product);
   }
 
-  async findByEan(ean: string) {
-    const product = await this.productsRepository.findOne({ where: { ean } });
-    if (!product) throw new NotFoundException('Product not found');
-    return product;
-  }
+async findByEan(ean: string) {
+  const product = await this.productsRepository
+    .createQueryBuilder('product')
+    .leftJoinAndSelect('product.brand', 'brand')
+    .leftJoinAndSelect('product.category', 'category')
+    .leftJoinAndSelect('product.subCategory', 'subCategory')
+    .leftJoinAndSelect('product.subSubCategory', 'subSubCategory')
+    .leftJoinAndSelect('product.images', 'images')
+    .leftJoinAndSelect('product.flags', 'flags')
+    .leftJoinAndSelect('product.composition', 'composition')
+    .where('product.ean = :ean', { ean })
+    .getOne();
+
+  if (!product) throw new NotFoundException('Product not found');
+  return product;
+}
+
 
 async findByBrand(brandId: number, page = 1, limit = 10) {
   const total = await this.productsRepository.count({ where: { brand: { id: brandId } } });
